@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import Application from "./Application";
+import Parkour from "./Parkour";
 export default function Bike() {
   const ref = useRef();
 

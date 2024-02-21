@@ -1,5 +1,5 @@
 import Parkour from "./lib";
-export default class Application {
+export default class ParkourService {
   constructor(dom, options) {
     this.options = options || {};
     this.status = "readying"; // 'readying' | 'playing' | 'failure'
@@ -12,8 +12,8 @@ export default class Application {
       this.sence = this.#initSence(this.instance, assets);
       this.#watchKey();
       this.#watchHp();
-      if(options.auto){
-        this.gameStart()
+      if (options.auto) {
+        this.gameStart();
       }
     });
   }
@@ -94,7 +94,7 @@ export default class Application {
     this.ticker = new Ticker();
     function itemTicker() {
       if (this.blood.hp <= 0) {
-        console.log(this.blood.hp)
+        console.log(this.blood.hp);
         this.ticker.stop();
         this.gameOver();
       } else {
@@ -118,7 +118,7 @@ export default class Application {
     this.trap.stop();
     this.player.stop();
     this.showRestart();
-    this.#clearWatchKey()
+    this.#clearWatchKey();
     this.status = "failure";
   }
   // 重新开始
@@ -128,8 +128,8 @@ export default class Application {
     this.score.reset();
     this.trap.restart();
     this.player.start();
-    this.ticker.start()
-    this.#watchKey()
+    this.ticker.start();
+    this.#watchKey();
     this.status = "playing";
   }
   // 显示重置按钮
