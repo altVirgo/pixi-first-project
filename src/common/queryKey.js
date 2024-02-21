@@ -1,0 +1,7 @@
+export const ORG = 'ORG'
+export const MONITOR = 'MONITOR'
+export const VIDEO = 'VIDEO'
+export const WARN = 'WARN'
+export const TOKEN = 'TOKEN'
+export const DICT = 'DICT'
+export const CACHE = 'CACHE'

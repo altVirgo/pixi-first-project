@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.search-box {
+  .ant-form .ant-form-item .ant-form-item-label {
+    white-space: nowrap !important;
+    margin-right: 10px !important;
+    flex: none !important;
+  }
+  .ant-form .ant-form-item .ant-form-item-control {
+    width: 100% !important;
+    flex: 1 !important;
+  }
+  .ant-form .ant-form-item .ant-form-item-control-input-content {
+    display: flex !important;
+  }
+}
+.mobile-ez-ptz-container {
+  display: none !important;
+}
+
+.ant-card {
+  overflow: hidden;
+  .ant-card-body {
+    padding: 0 !important;
+  }
+  .ant-card-actions>li{
+    margin: 0 !important;
+    .ant-btn{
+      border-radius:0
+    }
+  }
+}
