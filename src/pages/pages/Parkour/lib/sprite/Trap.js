@@ -11,7 +11,6 @@ export default class Trap extends Container {
     this.height = window.innerHeight;
     this.sprites = [];
     this.ticker = new Ticker();
-    this.initTicker();
   }
   #timer;
   initTicker() {
@@ -24,18 +23,18 @@ export default class Trap extends Container {
     }, 1000);
   }
   start() {
+    this.initTicker();
     this.ticker.start();
+  }
+  stop() {
+    this.#timer && clearInterval(this.#timer);
+    // this.ticker.stop();
   }
   restart() {
     if (this.children.length > 0) {
       this.removeChildren(0,this.children.length);
     }
-    this.initTicker()
-    // this.ticker.start();
-  }
-  stop() {
-    this.#timer && clearInterval(this.#timer);
-    // this.ticker.stop();
+    this.start()
   }
   #addTicker(item) {
     function itemTicker() {

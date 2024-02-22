@@ -1,4 +1,4 @@
-import Background from "../sence/Background"
+import Background from "./Background"
 export {
     Background,
 }

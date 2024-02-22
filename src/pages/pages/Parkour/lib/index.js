@@ -1,5 +1,5 @@
 import { Container, Application, Ticker, Assets } from "pixi.js";
-import { Trap, Player, Sence, Blood, Score, StartBtn, RestartBtn } from "./sprite";
+import { Trap, Player, Blood, Score, StartBtn, RestartBtn } from "./sprite";
 import { Background } from "./sence";
 import sky from "@/assets/images/parkour/sky.png";
 import floor from "@/assets/images/parkour/floor.png";
@@ -8,7 +8,7 @@ import trap from "@/assets/images/parkour/trap.png";
 import start from "@/assets/images/parkour/start.png";
 import restart from "@/assets/images/parkour/restart.png";
 export default class Parkour {
-  constructor(dom, options) {
+  constructor(dom, options={}) {
     this.options = options || {};
     this.status = "readying"; // 'readying' | 'playing' | 'failure'
     this.speed = options?.defaultSpeed || 5;
@@ -78,7 +78,8 @@ export default class Parkour {
   }
   // 按键按下事件
   #keydown(e) {
-    console.log("keydown");
+    // console.log("keydown");
+    if(this.status!=='playing') return
     if (e.code === "ArrowUp" || e.code === "Space") {
       this.player.jump();
     } else if (e.code === "ArrowDown") {
@@ -95,7 +96,8 @@ export default class Parkour {
   }
   // 按键抬起事件
   #keyup() {
-    console.log("keyup");
+    // console.log("keyup");
+    if(this.status!=='playing') return
     this.player.run();
     this.trap.resetSpeed();
     this.bg.resetSpeed();
@@ -105,7 +107,6 @@ export default class Parkour {
     this.ticker = new Ticker();
     function itemTicker() {
       if (this.blood.hp <= 0) {
-        console.log(this.blood.hp)
         this.ticker.stop();
         this.gameOver();
       } else {
