@@ -1,38 +1,39 @@
 import { Container, Application, Ticker, Assets } from "pixi.js";
 import { Trap, Player, Blood, Score, StartBtn, RestartBtn } from "./sprite";
 import { Background } from "./sence";
+import defaultConfig from "./config";
+import { deepMerge } from "./util/util";
 import sky from "@/assets/images/parkour/sky.png";
 import floor from "@/assets/images/parkour/floor.png";
 import player from "@/assets/images/parkour/player.png";
 import trap from "@/assets/images/parkour/trap.png";
 import start from "@/assets/images/parkour/start.png";
 import restart from "@/assets/images/parkour/restart.png";
+import Event from './util/event'
 export default class Parkour {
-  constructor(dom, options={}) {
-    this.options = options || {};
-    this.status = "readying"; // 'readying' | 'playing' | 'failure'
-    this.speed = options?.defaultSpeed || 5;
-    this.slowSpeed = options?.slowSpeed || 1;
-    this.hurrySpeed = options?.hurrySpeed || 1;
-    this.instance = this.#initApp(dom, options);
+  constructor(dom, config = {}) {
+    this.config = deepMerge(defaultConfig, config);
+    this.status = "readying"; // 'readying' | 'playing' | 'end'
+    this.speed = this.config?.defaultSpeed || 5;
+    this.instance = this.#initApp(dom, this.config);
     this.#loadResource().then((assets) => {
       this.assets = assets;
       this.sence = this.#initSence(this.instance, assets);
       this.#watchKey();
       this.#watchHp();
-      if(options.autoPlay){
-        this.gameStart()
+      if (this.config.autoPlay) {
+        this.gameStart();
       }
     });
   }
   // 创建实例
-  #initApp(dom, options) {
+  #initApp(dom, config) {
     this.instance = new Application({
       width: window.innerWidth,
       height: window.innerHeight,
       backgroundColor: 0xffffff,
       resizeTo: window,
-      ...options,
+      ...config,
     });
     dom.appendChild(this.instance.view);
     return this.instance;
@@ -47,13 +48,12 @@ export default class Parkour {
     let { sky, floor, player, trap, start } = this.assets;
     this.container = new Container();
     instance.stage.addChild(this.container);
-    this.bg = new Background({ speed: this.speed, asset: { sky, floor } });
+    this.bg = new Background(this.config, { asset: { sky, floor } });
     this.player = new Player({ asset: player });
     this.blood = new Blood();
     this.score = new Score();
-    this.trap = new Trap({ speed: this.speed, asset: trap });
+    this.trap = new Trap(this.config, { asset: trap }, this);
     this.startBtn = new StartBtn({ asset: start, handClick: this.gameStart.bind(this) });
-    this.trap.watchHit(this.player, this.blood);
 
     this.container.addChild(this.bg);
     this.container.addChild(this.player);
@@ -63,9 +63,7 @@ export default class Parkour {
     this.container.addChild(this.startBtn);
     return this.container;
   }
-  #initSprite(){
-
-  }
+  #initSprite() {}
   // 按键监听
   #watchKey() {
     document.addEventListener("keydown", this.#keydown.bind(this));
@@ -79,25 +77,21 @@ export default class Parkour {
   // 按键按下事件
   #keydown(e) {
     // console.log("keydown");
-    if(this.status!=='playing') return
+    if (this.status !== "playing") return;
     if (e.code === "ArrowUp" || e.code === "Space") {
       this.player.jump();
     } else if (e.code === "ArrowDown") {
       this.player.slide();
     } else if (e.code === "ArrowLeft") {
-      this.player.slow();
-      this.trap.slow(this.slowSpeed);
-      this.bg.slow(this.slowSpeed);
+      Event.publish('slow')
     } else if (e.code === "ArrowRight") {
-      this.player.hurry();
-      this.trap.hurry(this.hurrySpeed);
-      this.bg.hurry(this.hurrySpeed);
+      Event.publish('hurry')
     }
   }
   // 按键抬起事件
   #keyup() {
     // console.log("keyup");
-    if(this.status!=='playing') return
+    if (this.status !== "playing") return;
     this.player.run();
     this.trap.resetSpeed();
     this.bg.resetSpeed();
@@ -130,8 +124,8 @@ export default class Parkour {
     this.trap.stop();
     this.player.stop();
     this.showRestart();
-    this.#clearWatchKey()
-    this.status = "failure";
+    this.#clearWatchKey();
+    this.status = "end";
   }
   // 重新开始
   gameRestart() {
@@ -140,8 +134,8 @@ export default class Parkour {
     this.score.reset();
     this.trap.restart();
     this.player.start();
-    this.ticker.start()
-    this.#watchKey()
+    this.ticker.start();
+    this.#watchKey();
     this.status = "playing";
   }
   // 显示重置按钮
@@ -150,4 +144,6 @@ export default class Parkour {
     this.restartBtn = new RestartBtn({ asset: restart, handClick: this.gameRestart.bind(this) });
     this.container.addChild(this.restartBtn);
   }
+  // 开枪
+  shoot() {}
 }

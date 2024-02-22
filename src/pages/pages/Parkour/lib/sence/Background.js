@@ -1,13 +1,16 @@
 import { Container, Assets, TilingSprite, Ticker } from "pixi.js";
 export default class Background extends Container {
-  constructor(options) {
+  constructor(config = {}, options = {}) {
     super();
     this.asset = options.asset;
-    this.speed = options.speed;
-    this.status = "run";
-    this.init();
+    this.speed = config.speed;
+    this.slowSpeed = config.slowSpeed;
+    this.hurrySpeed = config.hurrySpeed;
+    this.status = "normal";
+    this.#init();
+    this.#initEventListener();
   }
-  async init() {
+  async #init() {
     this.height = window.innerHeight;
     // 地面
     const footer = new TilingSprite(this.asset.floor, window.innerWidth, 130);
@@ -27,7 +30,7 @@ export default class Background extends Container {
       sky.tilePosition.x -= this.speed;
     };
     this.ticker.add(sceneTicker);
-    this.start()
+    this.start();
   }
   // 开始
   start() {
@@ -37,20 +40,23 @@ export default class Background extends Container {
   stop() {
     this.ticker.stop();
   }
+
+  #initEventListener() {
+    Event.listen("slow", this.slow.bind(this));
+    Event.listen("hurry", this.hurry.bind(this));
+  }
   // 减速
-  slow(slowSpeed) {
-    if (this.status === "run") {
+  slow() {
+    if (this.status === "normal") {
       this.status = "slow";
-      this.speed = this.speed - slowSpeed;
-      this.slowSpeed = slowSpeed;
+      this.speed = this.speed - this.slowSpeed;
     }
   }
   // 加速
-  hurry(hurrySpeed) {
-    if (this.status === "run") {
+  hurry() {
+    if (this.status === "normal") {
       this.status = "hurry";
-      this.speed = this.speed + hurrySpeed;
-      this.hurrySpeed = hurrySpeed;
+      this.speed = this.speed + this.hurrySpeed;
     }
   }
   // 匀速
@@ -60,6 +66,6 @@ export default class Background extends Container {
     } else if (this.status === "hurry") {
       this.speed = this.speed - this.hurrySpeed;
     }
-    this.status = "run";
+    this.status = "normal";
   }
 }

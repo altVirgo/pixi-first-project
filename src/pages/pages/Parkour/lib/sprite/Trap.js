@@ -1,91 +1,36 @@
 import { Container, Assets, Texture, Rectangle, Ticker } from "pixi.js";
 import TrapItem from "./TrapItem";
-import { hitTestRectangle } from "../util";
+import { hitTestRectangle } from "../util/util";
 export default class Trap extends Container {
-  constructor(options) {
+  constructor(config, options, instance) {
     super();
+    this.config = config;
     this.options = options;
-    this.status = "run";
-    this.speed = options.speed;
+    this.instance = instance;
     this.width = window.innerWidth;
     this.height = window.innerHeight;
-    this.sprites = [];
-    this.ticker = new Ticker();
+    // this.sprites = [];
   }
   #timer;
-  initTicker() {
+  initTimer() {
     this.#timer && clearInterval(this.#timer);
     this.#timer = setInterval(() => {
-      let trapItem = new TrapItem({ asset: this.options.asset });
-      this.sprites.push(trapItem);
+      let trapItem = new TrapItem(this.config, this.options, this.instance);
+      // this.sprites.push(trapItem);
+      // console.log(this.sprites);
       this.addChild(trapItem);
-      this.#addTicker(trapItem);
     }, 1000);
   }
   start() {
-    this.initTicker();
-    this.ticker.start();
+    this.initTimer();
   }
   stop() {
     this.#timer && clearInterval(this.#timer);
-    // this.ticker.stop();
   }
   restart() {
     if (this.children.length > 0) {
-      this.removeChildren(0,this.children.length);
+      this.removeChildren(0, this.children.length);
     }
-    this.start()
-  }
-  #addTicker(item) {
-    function itemTicker() {
-      item.x -= this.speed;
-      // 人物与障碍物碰撞
-      if (this.player && !item.isHit) {
-        let isHit = hitTestRectangle(this.player, item);
-        item.isHit = isHit;
-        if (item.isHit) {
-          this.blood && this.blood.loseBlood();
-          this.ticker.remove(itemTicker.bind(this));
-          this.removeChild(item);
-        }
-      }
-      // 超出屏幕移除
-      if (item.x < -item.width) {
-        this.ticker.remove(itemTicker.bind(this));
-        this.removeChild(item);
-      }
-    }
-    this.ticker.add(itemTicker.bind(this));
-  }
-
-  // 减速
-  slow(slowSpeed) {
-    if (this.status === "run") {
-      this.status = "slow";
-      this.speed = this.speed - slowSpeed;
-      this.slowSpeed = slowSpeed;
-    }
-  }
-  // 加速
-  hurry(hurrySpeed) {
-    if (this.status === "run") {
-      this.status = "hurry";
-      this.speed = this.speed + hurrySpeed;
-      this.hurrySpeed = hurrySpeed;
-    }
-  }
-  // 匀速
-  resetSpeed() {
-    if (this.status === "slow") {
-      this.speed = this.speed + this.slowSpeed;
-    } else if (this.status === "hurry") {
-      this.speed = this.speed - this.hurrySpeed;
-    }
-    this.status = "run";
-  }
-  // 碰撞检测
-  watchHit(player, blood) {
-    this.player = player;
-    this.blood = blood;
+    this.start();
   }
 }

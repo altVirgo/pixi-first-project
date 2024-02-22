@@ -37,6 +37,7 @@ export default class Player extends Sprite {
     this.textures = [];
     this.init();
     this.initTicker();
+    this.#initEventListener();
   }
   init() {
     PlayerTexturePosition.forEach((position, i) => {
@@ -105,6 +106,10 @@ export default class Player extends Sprite {
   slide() {
     this.status = "slide";
   }
+  #initEventListener() {
+    Event.listen("slow", this.slow.bind(this));
+    Event.listen("hurry", this.hurry.bind(this));
+  }
   // 减速
   slow() {
     if (this.x !== 60) {
@@ -119,6 +124,14 @@ export default class Player extends Sprite {
     }
     this.status = "hurry";
   }
-
+  // 匀速
+  resetSpeed() {
+    if (this.status === "slow") {
+      this.speed = this.speed + this.slowSpeed;
+    } else if (this.status === "hurry") {
+      this.speed = this.speed - this.hurrySpeed;
+    }
+    this.status = "run";
+  }
   //
 }
