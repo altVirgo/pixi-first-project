@@ -1,5 +1,5 @@
 import { Container, Application, Ticker, Assets } from "pixi.js";
-import { Trap, Player, Blood, Score, StartBtn, RestartBtn } from "./sprite";
+import { Trap, Player, Blood, Score, StartBtn, RestartBtn, Fire } from "./sprite";
 import { Background } from "./sence";
 import defaultConfig from "./config";
 import { deepMerge } from "./util/util";
@@ -9,7 +9,10 @@ import player from "@/assets/images/parkour/player.png";
 import trap from "@/assets/images/parkour/trap.png";
 import start from "@/assets/images/parkour/start.png";
 import restart from "@/assets/images/parkour/restart.png";
-import Event from './util/event'
+import gold from "@/assets/audio/get_glod.mp3";
+import readyGo from "@/assets/audio/ready_go.mp3";
+import fire from "@/assets/audio/fire.mp3";
+import Event from "./util/event";
 export default class Parkour {
   constructor(dom, config = {}) {
     this.config = deepMerge(defaultConfig, config);
@@ -40,7 +43,7 @@ export default class Parkour {
   }
   // 加载资源
   #loadResource() {
-    Assets.addBundle("resource", { sky, floor, player, trap, start, restart });
+    Assets.addBundle("resource", { sky, floor, player, trap, start, restart,gold,readyGo,fire });
     return Assets.loadBundle("resource");
   }
   // 创建场景
@@ -53,14 +56,16 @@ export default class Parkour {
     this.blood = new Blood();
     this.score = new Score();
     this.trap = new Trap(this.config, { asset: trap }, this);
-    this.startBtn = new StartBtn({ asset: start, handClick: this.gameStart.bind(this) });
-
+    
     this.container.addChild(this.bg);
     this.container.addChild(this.player);
     this.container.addChild(this.trap);
     this.container.addChild(this.blood);
     this.container.addChild(this.score);
-    this.container.addChild(this.startBtn);
+    if(!this.config.autoPlay){
+      this.startBtn = new StartBtn({ asset: start, handClick: this.gameStart.bind(this) });
+      this.container.addChild(this.startBtn);
+    }
     return this.container;
   }
   #initSprite() {}
@@ -78,23 +83,28 @@ export default class Parkour {
   #keydown(e) {
     // console.log("keydown");
     if (this.status !== "playing") return;
-    if (e.code === "ArrowUp" || e.code === "Space") {
+    if (e.code === "ArrowUp") {
       this.player.jump();
     } else if (e.code === "ArrowDown") {
       this.player.slide();
     } else if (e.code === "ArrowLeft") {
-      Event.publish('slow')
+      Event.publish("slow");
+      this.status = "slow";
     } else if (e.code === "ArrowRight") {
-      Event.publish('hurry')
+      Event.publish("hurry");
+      this.status = "hurry";
+    } else if (e.code === "Space") {
+      this.shoot();
     }
   }
   // 按键抬起事件
   #keyup() {
     // console.log("keyup");
-    if (this.status !== "playing") return;
-    this.player.run();
-    this.trap.resetSpeed();
-    this.bg.resetSpeed();
+    if (this.status !== "playing") {
+      Event.publish("resetSpeed");
+      this.status = "playing";
+    }
+    console.log(this.status);
   }
   // 监听血条
   #watchHp() {
@@ -144,6 +154,11 @@ export default class Parkour {
     this.restartBtn = new RestartBtn({ asset: restart, handClick: this.gameRestart.bind(this) });
     this.container.addChild(this.restartBtn);
   }
-  // 开枪
-  shoot() {}
+  // 发射
+  shoot() {
+    let { player } = this.assets;
+    let fire = new Fire(this.config, { asset: player }, this);
+    this.container.addChild(fire);
+    console.log(fire)
+  }
 }

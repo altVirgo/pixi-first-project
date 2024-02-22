@@ -44,7 +44,9 @@ export default class Background extends Container {
   #initEventListener() {
     Event.listen("slow", this.slow.bind(this));
     Event.listen("hurry", this.hurry.bind(this));
+    Event.listen("resetSpeed", this.resetSpeed.bind(this));
   }
+  
   // 减速
   slow() {
     if (this.status === "normal") {
@@ -52,6 +54,7 @@ export default class Background extends Container {
       this.speed = this.speed - this.slowSpeed;
     }
   }
+
   // 加速
   hurry() {
     if (this.status === "normal") {

@@ -109,6 +109,7 @@ export default class Player extends Sprite {
   #initEventListener() {
     Event.listen("slow", this.slow.bind(this));
     Event.listen("hurry", this.hurry.bind(this));
+    Event.listen("resetSpeed", this.run.bind(this));
   }
   // 减速
   slow() {
@@ -124,14 +125,4 @@ export default class Player extends Sprite {
     }
     this.status = "hurry";
   }
-  // 匀速
-  resetSpeed() {
-    if (this.status === "slow") {
-      this.speed = this.speed + this.slowSpeed;
-    } else if (this.status === "hurry") {
-      this.speed = this.speed - this.hurrySpeed;
-    }
-    this.status = "run";
-  }
-  //
 }
