@@ -1,5 +1,5 @@
 import { Container, Assets, Texture, Rectangle, Ticker } from "pixi.js";
-import GoldItem from "./GoldItem";
+import TrapItem from "./TrapItem";
 import { hitTestRectangle } from "../util/util";
 export default class Gold extends Container {
   constructor(config, options, instance) {
@@ -15,11 +15,10 @@ export default class Gold extends Container {
   initTimer() {
     this.#timer && clearInterval(this.#timer);
     this.#timer = setInterval(() => {
-      let goldItem = new GoldItem(this.config, this.options, this.instance);
-      // console.log(goldItem)
-      // this.sprites.push(goldItem);
+      let trapItem = new TrapItem(this.config, this.options, this.instance);
+      // this.sprites.push(trapItem);
       // console.log(this.sprites);
-      this.addChild(goldItem);
+      this.addChild(trapItem);
     }, 1000);
   }
   start() {

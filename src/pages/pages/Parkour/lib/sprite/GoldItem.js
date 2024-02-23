@@ -1,61 +1,67 @@
 import { Sprite, Texture, Rectangle, Ticker } from "pixi.js";
 import { hitTestRectangle } from "../util/util";
-const TrapTexturePosition = [
-  [0, 55, 180, 40],
-  [250, 40, 180, 50],
-  [0, 280, 180, 60],
+const GoldframePosition = [
+  [0, 0, 82, 82],
+  [82, 0, 82, 82],
+  [164, 0, 82, 82],
+  [246, 0, 82, 82],
+  [328, 0, 82, 82],
+  [410, 0, 82, 82],
+  [492, 0, 82, 82],
+  [574, 0, 82, 82],
 ];
-let textures = [];
+let frames = [];
 let asset;
-function createTraps() {
-  TrapTexturePosition.forEach((position) => {
-    const texture = new Texture(asset, new Rectangle(...position));
-    textures.push(texture);
+function createFrames() {
+  GoldframePosition.forEach((position) => {
+    let frame = new Rectangle(...position);
+    frames.push(frame);
   });
 }
-export default class TrapItem extends Sprite {
+export default class GoldItem extends Sprite {
   constructor(config = {}, options = {}, instance) {
     super();
     asset = options.asset;
     this.config = config;
     this.instance = instance;
     this.status = "normal";
-    if (textures.length <= 0) {
-      createTraps();
+    if (frames.length <= 0) {
+      createFrames();
     }
-    this.width = 80;
-    this.x = window.innerWidth;
-    this.y = window.innerHeight - 110;
+
+    this.width = 40;
+    this.height = 40
+    this.x = instance.instance.screen.width;
+    this.y = instance.instance.screen.height - 110;
     this.speed = this.config.speed;
-    this.slowSpeed = this.config.slowSpeed;
-    this.hurrySpeed = this.config.hurrySpeed;
-    this.init();
-    this.#initTicker();
-    this.#initEventListener()
+    this.init()
   }
   init() {
-    let index = parseInt(Math.random() * 2) + 1;
-    this.texture = textures[index];
-    this.height = TrapTexturePosition[index][3] * (4 / 9);
-  }
-  #initTicker() {
     this.ticker = new Ticker();
+    this.texture = new Texture(asset,frames[0]);
+    this.#addTicker();
+    this.#initEventListener()
+  }
+  #addTicker() {
     function itemTicker() {
-      this.x -= this.speed;
-      // 人物与障碍物碰撞
+      this.x -= this.speed; // 向左移动
+      // console.log(this.x,this.speed);
+      let index = Math.floor(Date.now() / 100) % 8
+      this.texture.frame = frames[Math.floor(Date.now() / 100) % 8];
+      // 人物与金币碰撞
       if (this.instance.player && !this.isHit) {
         let isHit = hitTestRectangle(this.instance.player, this);
         this.isHit = isHit;
         if (this.isHit) {
-          this.instance.blood && this.instance.blood.loseBlood();
+          // this.instance.blood && this.instance.blood.loseBlood();
           this.ticker.remove(itemTicker.bind(this));
-          this.instance.trap.removeChild(this);
+          this.instance.gold.removeChild(this);
         }
       }
       // 超出屏幕移除
-      if (this.x < -this.width) {
+      if (this.x < - this.width) {
         this.ticker.remove(itemTicker.bind(this));
-        this.instance.trap.removeChild(this);
+        this.instance.gold.removeChild(this);
       }
     }
     this.ticker.add(itemTicker.bind(this));
