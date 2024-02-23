@@ -7,8 +7,8 @@ export default class Trap extends Container {
     this.config = config;
     this.options = options;
     this.instance = instance;
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+    this.width = instance.instance.screen.width;
+    this.height = instance.instance.screen.height;
     // this.sprites = [];
   }
   #timer;

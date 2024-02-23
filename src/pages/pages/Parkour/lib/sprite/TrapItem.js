@@ -1,5 +1,5 @@
 import { Sprite, Texture, Rectangle, Ticker } from "pixi.js";
-import { hitTestRectangle } from "../util/util";
+import { hitTestRectangle, deepMerge } from "../util/util";
 const TrapTexturePosition = [
   [0, 55, 180, 40],
   [250, 40, 180, 50],
@@ -17,22 +17,32 @@ export default class TrapItem extends Sprite {
   constructor(config = {}, options = {}, instance) {
     super();
     asset = options.asset;
-    this.config = config;
+    this.config = deepMerge(config, config.trap);
     this.instance = instance;
     this.status = "normal";
     if (textures.length <= 0) {
       createTraps();
     }
     this.width = 80;
-    this.x = window.innerWidth;
-    this.y = window.innerHeight - 110;
+    this.x = instance.instance.screen.width;
+    this.y = instance.instance.screen.height - 110;
+
     this.speed = this.config.speed;
     this.slowSpeed = this.config.slowSpeed;
     this.hurrySpeed = this.config.hurrySpeed;
+
+    this.fullHp = this.config.fullHp;
+    this.hp = this.fullHp;
+    this.dropHp = this.config.dropHp;
+    this.fireSpeed = 0;
+    this.attackCount = 0;
+    this.attackers = [];
+
     this.init();
     this.#initTicker();
-    this.#initEventListener()
+    this.#initEventListener();
   }
+  #itemTicker;
   init() {
     let index = parseInt(Math.random() * 2) + 1;
     this.texture = textures[index];
@@ -40,31 +50,44 @@ export default class TrapItem extends Sprite {
   }
   #initTicker() {
     this.ticker = new Ticker();
-    function itemTicker() {
+    this.#itemTicker = () => {
       this.x -= this.speed;
+      if (this.fireSpeed >= 0) {
+        this.hp -= this.fireSpeed;
+      }
       // 人物与障碍物碰撞
       if (this.instance.player && !this.isHit) {
         let isHit = hitTestRectangle(this.instance.player, this);
         this.isHit = isHit;
         if (this.isHit) {
           this.instance.blood && this.instance.blood.loseBlood();
-          this.ticker.remove(itemTicker.bind(this));
-          this.instance.trap.removeChild(this);
+          this.destroy();
         }
       }
       // 超出屏幕移除
       if (this.x < -this.width) {
-        this.ticker.remove(itemTicker.bind(this));
-        this.instance.trap.removeChild(this);
+        this.destroy();
       }
-    }
-    this.ticker.add(itemTicker.bind(this));
+      // 障碍物燃烧完
+      if (this.hp <= 0) {
+        this.destroy();
+        this.attackers.forEach((fire) => {
+          this.instance.container.removeChild(fire);
+        });
+      }
+    };
+    this.ticker.add(this.#itemTicker.bind(this));
     this.ticker.start();
   }
-  #initEventListener(){
-    Event.listen('slow',this.slow.bind(this));
-    Event.listen('hurry', this.hurry.bind(this));
+  #initEventListener() {
+    Event.listen("slow", this.slow.bind(this));
+    Event.listen("hurry", this.hurry.bind(this));
     Event.listen("resetSpeed", this.resetSpeed.bind(this));
+  }
+  destroy() {
+    this.ticker.stop()
+    this.ticker.remove(this.#itemTicker.bind(this));
+    this.instance.trap.removeChild(this);
   }
   // 减速
   slow() {
@@ -88,5 +111,11 @@ export default class TrapItem extends Sprite {
       this.speed = this.speed - this.hurrySpeed;
     }
     this.status = "normal";
+  }
+  // 遭受攻击
+  attack(fire) {
+    this.attackers.push(fire);
+    this.attackCount++;
+    this.fireSpeed = this.attackCount * this.dropHp;
   }
 }

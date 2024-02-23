@@ -24,14 +24,14 @@ const PlayerTexturePosition = [
 ];
 
 export default class Player extends Sprite {
-  constructor(options = {}) {
+  constructor(options = {}, instance) {
     super();
 
     this.asset = options.asset;
     this.status = "run"; // "ready"  "run" | "jump" | "slide" | "slow" | "hurry"
     this.width = 80;
     this.height = 80;
-    this.defaultY = window.innerHeight - 160;
+    this.defaultY = instance.instance.screen.height - 160;
     this.x = -120;
     this.y = this.defaultY;
     this.textures = [];

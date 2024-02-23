@@ -27,19 +27,31 @@ export function hitTestRectangle(r1, r2) {
 }
 
 // 合并对象
-export function deepMerge (obj1, obj2) {
-  if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return
+export function deepMerge(obj1, obj2) {
+  if (typeof obj1 !== "object" || typeof obj2 !== "object") return;
 
   for (const key in obj2) {
-    if (!Object.prototype.hasOwnProperty.call(obj2, key)) continue
-    if (Array.isArray(obj1[key]) && Array.isArray(obj2[key])) {
-      obj1[key] = deepMerge(obj1[key], obj2[key])
-    } else if (typeof obj1[key] === 'object' && typeof obj2[key] === 'object') {
-      obj1[key] = deepMerge(obj1[key], obj2[key])
+    if (!Object.prototype.hasOwnProperty.call(obj2, key)) continue;
+    if (typeof obj1[key] === "object" && typeof obj2[key] === "object") {
+      obj1[key] = deepMerge(obj1[key], obj2[key]);
     } else {
-      obj1[key] = obj2[key]
+      obj1[key] = obj2[key];
     }
   }
 
-  return obj1
+  return obj1;
+}
+
+// 节流
+export function throttle(func, wait) {
+  let timer;
+  return function () {
+    let _this = this;
+    if (!timer) {
+      func.apply(_this, arguments);
+      timer = setTimeout(() => {
+        timer = null;
+      }, wait);
+    }
+  };
 }
