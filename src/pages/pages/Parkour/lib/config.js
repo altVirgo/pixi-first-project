@@ -1,4 +1,5 @@
 export default {
+  gridCount:20,
   speed: 5,
   hurrySpeed: 1,
   slowSpeed: 1,

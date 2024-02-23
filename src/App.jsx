@@ -25,6 +25,11 @@ function AppInner() {
           path: "/parkour",
           element: <LazyImportComponent children={lazy(() => import("@/pages/pages/Parkour/index.jsx"))} />,
         },
+        {
+          id: "parkourTool",
+          path: "/parkour/tool",
+          element: <LazyImportComponent children={lazy(() => import("@/pages/pages/Parkour/tool/index"))} />,
+        },
       ],
     },
     {

@@ -8,7 +8,7 @@ export default class Gold extends Container {
     this.options = options;
     this.instance = instance;
     this.width = instance.instance.screen.width;
-    this.height = instance.instance.screen.height;
+    this.height = instance.instance.screen.height - config.grisWidth*2;
     // this.sprites = [];
   }
   #timer;

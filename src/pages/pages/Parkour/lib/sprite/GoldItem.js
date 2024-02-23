@@ -1,5 +1,7 @@
 import { Sprite, Texture, Rectangle, Ticker } from "pixi.js";
 import { hitTestRectangle } from "../util/util";
+import { Grid } from "../container";
+import get_glod from "@/assets/audio/get_glod.mp3";
 const GoldframePosition = [
   [0, 0, 82, 82],
   [82, 0, 82, 82],
@@ -28,26 +30,25 @@ export default class GoldItem extends Sprite {
     if (frames.length <= 0) {
       createFrames();
     }
-
-    this.width = 40;
-    this.height = 40
+    this.width = config.gridWidth;
+    this.height = config.gridWidth;
     this.x = instance.instance.screen.width;
-    this.y = instance.instance.screen.height - 110;
+    this.y = instance.instance.screen.height - config.gridWidth * 3;
     this.speed = this.config.speed;
-    this.init()
+    this.init();
   }
   init() {
     this.ticker = new Ticker();
-    this.texture = new Texture(asset,frames[0]);
+    this.texture = new Texture(asset, frames[0]);
     this.#addTicker();
-    this.#initEventListener()
+    this.#initEventListener();
   }
   #addTicker() {
     function itemTicker() {
       this.x -= this.speed; // 向左移动
       // console.log(this.x,this.speed);
-      let index = Math.floor(Date.now() / 100) % 8
-      this.texture.frame = frames[Math.floor(Date.now() / 100) % 8];
+      let index = Math.floor(Date.now() / 100) % 8;
+      this.texture.frame = frames[Math.floor(Date.now() / 80) % 8];
       // 人物与金币碰撞
       if (this.instance.player && !this.isHit) {
         let isHit = hitTestRectangle(this.instance.player, this);
@@ -56,10 +57,11 @@ export default class GoldItem extends Sprite {
           // this.instance.blood && this.instance.blood.loseBlood();
           this.ticker.remove(itemTicker.bind(this));
           this.instance.gold.removeChild(this);
+          this.playAudio();
         }
       }
       // 超出屏幕移除
-      if (this.x < - this.width) {
+      if (this.x < -this.width) {
         this.ticker.remove(itemTicker.bind(this));
         this.instance.gold.removeChild(this);
       }
@@ -67,9 +69,9 @@ export default class GoldItem extends Sprite {
     this.ticker.add(itemTicker.bind(this));
     this.ticker.start();
   }
-  #initEventListener(){
-    Event.listen('slow',this.slow.bind(this));
-    Event.listen('hurry', this.hurry.bind(this));
+  #initEventListener() {
+    Event.listen("slow", this.slow.bind(this));
+    Event.listen("hurry", this.hurry.bind(this));
     Event.listen("resetSpeed", this.resetSpeed.bind(this));
   }
   // 减速
@@ -94,5 +96,21 @@ export default class GoldItem extends Sprite {
       this.speed = this.speed - this.hurrySpeed;
     }
     this.status = "normal";
+  }
+  playAudio() {
+    let audio = document.getElementById("get_glod");
+    if (!audio) {
+      audio = document.createElement("audio");
+      audio.id = "get_glod";
+      audio.src = get_glod;
+      audio.autoplay = true;
+      audio.loop = false;
+      document.body.appendChild(audio);
+    } else {
+      audio.play();
+    }
+    setTimeout(() => {
+      audio.stop();
+    }, 1000);
   }
 }

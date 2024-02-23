@@ -1,6 +1,7 @@
 import { Container, Application, Ticker, Assets } from "pixi.js";
-import { Trap, Gold,Player, Blood, Score, Fire } from "./sprite";
+import { Trap, Gold, Player, Blood, Score, Fire } from "./sprite";
 import { Background, StartBtn, RestartBtn } from "./sence";
+import { Grid } from "./container";
 import defaultConfig from "./config";
 import { deepMerge, throttle } from "./util/util";
 import sky from "@/assets/images/parkour/sky.png";
@@ -19,10 +20,14 @@ export default class Parkour {
     this.config = deepMerge(defaultConfig, config);
     this.status = "readying"; // 'readying' | 'playing' | 'end'
     this.speed = this.config?.defaultSpeed || 5;
+    this.#init(dom);
+  }
+  #init(dom) {
     this.instance = this.#initApp(dom, this.config);
     this.#loadResource().then((assets) => {
       this.assets = assets;
-      this.sence = this.#initSence(this.instance, assets);
+      this.grid = this.#initGrid(this.config);
+      this.sence = this.#initSence(this.instance);
       this.#watchKey();
       this.#watchHp();
       if (this.config.autoPlay) {
@@ -47,30 +52,37 @@ export default class Parkour {
     Assets.addBundle("resource", { sky, floor, player, trap, start, restart, gold });
     return Assets.loadBundle("resource");
   }
+  #initGrid() {
+    let grid = new Grid(this.config, {}, this);
+    this.config.gridWidth = grid.gridWidth;
+    console.log(grid.grids);
+    return grid;
+  }
   // 创建场景
   #initSence(instance) {
-    let { sky, floor, player, trap,gold, start } = this.assets;
-    this.container = new Container();
-    instance.stage.addChild(this.container);
-    this.bg = new Background(this.config, { asset: { sky, floor } });
-    this.player = new Player({ asset: player }, this);
+    let { sky, floor, player, trap, gold, start } = this.assets;
+
+    let container = new Container();
+    instance.stage.addChild(container);
+    this.bg = new Background(this.config, { asset: { sky, floor } }, this);
+    this.player = new Player(this.config, { asset: player }, this);
     this.blood = new Blood();
     this.score = new Score();
     // this.trap = new Trap(this.config, { asset: trap }, this);
-    this.gold = new Gold(this.config, { asset: gold },this);
+    this.gold = new Gold(this.config, { asset: gold }, this);
 
-    this.container.addChild(this.bg);
-    this.container.addChild(this.player);
-    // this.container.addChild(this.trap);
-    this.container.addChild(this.gold);
-    this.container.addChild(this.blood);
-    this.container.addChild(this.score);
+    container.addChild(this.bg);
+    container.addChild(this.player);
+    // container.addChild(this.trap);
+    container.addChild(this.gold);
+    container.addChild(this.blood);
+    container.addChild(this.score);
     if (!this.config.autoPlay) {
       this.startBtn = new StartBtn({ asset: start, handClick: this.gameStart.bind(this) });
-      this.container.addChild(this.startBtn);
+      container.addChild(this.startBtn);
     }
     this.shootFuc = throttle(this.shoot, this.config.attackFreezeTime);
-    return this.container;
+    return container;
   }
   #initSprite() {}
   // 按键监听
@@ -94,10 +106,8 @@ export default class Parkour {
       this.player.slide();
     } else if (e.code === "ArrowLeft") {
       Event.publish("slow");
-      this.status = "slow";
     } else if (e.code === "ArrowRight") {
       Event.publish("hurry");
-      this.status = "hurry";
     } else if (e.code === "Space") {
       this.shoot();
     }
@@ -107,9 +117,8 @@ export default class Parkour {
   #keyup() {
     // console.log("keyup");
     this.keydown = false;
-    if (this.status === "slow" || this.status === "hurry") {
+    if (this.player.status === "slow" || this.player.status === "hurry" || this.player.status==='slide') {
       Event.publish("resetSpeed");
-      this.status = "playing";
     }
     console.log(this.status);
   }
