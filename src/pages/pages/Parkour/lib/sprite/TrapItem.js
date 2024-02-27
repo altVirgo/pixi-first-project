@@ -1,5 +1,6 @@
 import { Sprite, Texture, Rectangle, Ticker } from "pixi.js";
 import { hitTestRectangle, deepMerge } from "../util/util";
+import Event from "../util/event";
 const TrapTexturePosition = [
   [0, 55, 180, 40],
   [250, 40, 180, 50],

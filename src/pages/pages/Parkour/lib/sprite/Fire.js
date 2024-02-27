@@ -1,5 +1,6 @@
 import { Sprite, Texture, Rectangle, Ticker } from "pixi.js";
 import { hitTestRectangle } from "../util/util";
+import Event from "../util/event";
 import gsap from "gsap";
 import fire from "@/assets/audio/fire.mp3";
 const FireTexturePosition = [

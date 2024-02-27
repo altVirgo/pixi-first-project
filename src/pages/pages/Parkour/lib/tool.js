@@ -9,7 +9,6 @@ export default class ParkourTool extends Parkour {
     this.stage = this.getStage();
     this.loadResource().then(() => {
       this.#init();
-      console.log(this)
     });
   }
   #init() {

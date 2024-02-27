@@ -1,7 +1,6 @@
 import { Sprite, Texture, Assets, Rectangle, Ticker } from "pixi.js";
-import player from "@/assets/images/parkour/player.png";
 import gsap from "gsap";
-import Grid from "../container/Grid";
+import Event from "../util/event";
 const PlayerTexturePosition = [
   // run
   [0, 0, 105, 115],

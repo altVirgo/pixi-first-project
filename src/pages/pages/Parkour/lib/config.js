@@ -1,6 +1,7 @@
 export default {
   gridCount:20,
-  speed: 5,
+  speed: 6,
+  defaultSpeed: 6,
   hurrySpeed: 1,
   slowSpeed: 1,
   autoPlay: true,

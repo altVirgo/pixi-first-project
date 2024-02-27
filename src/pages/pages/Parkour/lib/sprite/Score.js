@@ -12,8 +12,8 @@ export default class Score extends Text {
   init() {
     this.text = this.label + this.split + this.score;
   }
-  updateScore() {
-    this.score += 1;
+  updateScore(score) {
+    this.score += score||1;
     this.text = this.label + this.split + this.score;
   }
   reset(){

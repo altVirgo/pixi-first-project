@@ -1,80 +1,42 @@
-import { Container, Application, Ticker, Assets } from "pixi.js";
+import { Container, Ticker } from "pixi.js";
 import { Trap, Gold, Player, Blood, Score, Fire } from "./sprite";
 import { Background, StartBtn, RestartBtn } from "./sence";
-import { Grid } from "./container";
-import defaultConfig from "./config";
-import { deepMerge, throttle } from "./util/util";
-export default class Tool {
+import Event from "./util/event";
+import { throttle } from "./util/util";
+import Parkour from ".";
+export default class ParkourGame extends Parkour {
   constructor(dom, config = {}) {
-    this.config = deepMerge(defaultConfig, config);
+    super(dom, config);
+    this.instance = this.getInstance();
+    this.stage = this.getStage();
+    this.status = "readying"; // 'readying' | 'playing' | 'end'
     this.speed = this.config?.defaultSpeed || 5;
-    this.instance = this.#initApp(dom, this.config);
-    this.grid = this.#initGrid(this.config);
-  }
-  // 创建实例
-  #initApp(dom, config) {
-    this.instance = new Application({
-      width: window.innerWidth,
-      height: window.innerHeight,
-      backgroundColor: 0xffffff,
-      resizeTo: window,
-      ...config,
+    this.loadResource().then(() => {
+      this.#init();
     });
-    dom.appendChild(this.instance.view);
-    return this.instance;
   }
-  initGame() {
+  #init() {
     this.grid.createGrid();
-    this.sence = this.initSence(this.instance);
+    this.sence = this.#createSence();
     this.#watchKey();
     this.#watchHp();
     if (this.config.autoPlay) {
       this.gameStart();
     }
   }
-  initTool() {
-    this.bg = new Floor()
-    this.sence = this.#initToolSence(this.instance);
-    this.grid.createGrid(true);
-  }
-  // 加载资源
-  loadResource() {
-    return new Promise((resolve, reject) => {
-      Assets.addBundle("resource", { sky, floor, player, trap, start, restart, gold });
-      Assets.loadBundle("resource").then((assets) => {
-        this.assets = assets;
-        resolve();
-      });
-    });
-    return;
-  }
-  #initGrid() {
-    let grid = new Grid(this.config, {}, this);
-    this.config.gridWidth = grid.gridWidth;
-    this.instance.stage.addChild(grid);
-    return grid;
-  }
-  #initToolSence(instance){
-    let { sky, floor } = this.assets;
-
-    let container = new Container();
-    instance.stage.addChild(container);
-    this.bg = new Background(this.config, { asset: { sky, floor },autoPlay:false }, this);
-    container.addChild(this.bg);
-    return container;
-  }
   // 创建场景
-  #initGameSence(instance) {
+  #createSence() {
     let { sky, floor, player, trap, gold, start } = this.assets;
 
     let container = new Container();
-    instance.stage.addChild(container);
+    this.instance.stage.addChild(container);
     this.bg = new Background(this.config, { asset: { sky, floor } }, this);
+    this.bg.start();
     this.player = new Player(this.config, { asset: player }, this);
     this.blood = new Blood();
     this.score = new Score();
     // this.trap = new Trap(this.config, { asset: trap }, this);
-    this.gold = new Gold(this.config, { asset: gold }, this);
+    this.gold = new Gold(this.config, { asset: gold, move: true }, this);
 
     container.addChild(this.bg);
     container.addChild(this.player);
@@ -125,7 +87,6 @@ export default class Tool {
     if (this.player.status === "slow" || this.player.status === "hurry" || this.player.status === "slide") {
       Event.publish("resetSpeed");
     }
-    console.log(this.status);
   }
   // 监听血条
   #watchHp() {
@@ -178,7 +139,7 @@ export default class Tool {
     this.restartBtn = new RestartBtn({ asset: restart, handClick: this.gameRestart.bind(this) });
     this.container.addChild(this.restartBtn);
   }
-  // 发射
+  // 发射火焰
   shootFuc() {
     let { player } = this.assets;
     let fire = new Fire(this.config, { asset: player }, this);

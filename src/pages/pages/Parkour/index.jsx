@@ -1,16 +1,16 @@
 import { useEffect, useRef } from "react";
-import Parkour from "./lib";
+import ParkourGame from "./lib/game";
 export default function PageParkour() {
   const ref = useRef();
 
   useEffect(() => {
     if (ref.current) {
-      let app = new Parkour(ref.current);
-      console.log(app)
+      let parkourGame = new ParkourGame(ref.current);
+      console.log(parkourGame)
     }
   }, [ref]);
   return (
-    <div ref={ref}>
+    <div ref={ref} className=" w-full h-full">
     </div>
   );
 }
