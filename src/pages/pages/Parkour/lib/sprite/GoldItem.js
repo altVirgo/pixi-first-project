@@ -25,6 +25,7 @@ export default class GoldItem extends Sprite {
     super();
     asset = options.asset;
     this.config = config;
+    this.options = options
     this.instance = instance;
     this.status = "normal";
     if (frames.length <= 0) {
@@ -32,20 +33,24 @@ export default class GoldItem extends Sprite {
     }
     this.width = config.gridWidth;
     this.height = config.gridWidth;
-    this.x = instance.instance.screen.width;
-    this.y = instance.instance.screen.height - config.gridWidth * 3;
+    let {
+      position: [x, y],
+    } = options;
+    this.x = x || instance.instance.screen.width;
+    this.y = y || instance.instance.screen.height - config.gridWidth * 3;
     this.speed = this.config.speed;
     this.init();
   }
   init() {
-    this.ticker = new Ticker();
     this.texture = new Texture(asset, frames[0]);
+    this.ticker = new Ticker();
     this.#addTicker();
     this.#initEventListener();
   }
   #addTicker() {
+    let {move} = this.options
     function itemTicker() {
-      this.x -= this.speed; // 向左移动
+      if(move) this.x -= this.speed; // 向左移动
       // console.log(this.x,this.speed);
       let index = Math.floor(Date.now() / 100) % 8;
       this.texture.frame = frames[Math.floor(Date.now() / 80) % 8];
@@ -99,18 +104,14 @@ export default class GoldItem extends Sprite {
   }
   playAudio() {
     let audio = document.getElementById("get_glod");
-    if (!audio) {
-      audio = document.createElement("audio");
-      audio.id = "get_glod";
-      audio.src = get_glod;
-      audio.autoplay = true;
-      audio.loop = false;
-      document.body.appendChild(audio);
-    } else {
-      audio.play();
-    }
+    audio = document.createElement("audio");
+    audio.id = "get_glod";
+    audio.src = get_glod;
+    audio.autoplay = true;
+    audio.loop = false;
+    document.body.appendChild(audio);
     setTimeout(() => {
-      audio.stop();
+      document.removeChild(audio);
     }, 1000);
   }
 }

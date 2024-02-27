@@ -3,6 +3,7 @@ export default class Background extends Container {
   constructor(config = {}, options = {}, app) {
     super();
     this.app = app;
+    this.options = options;
     this.asset = options.asset;
     this.speed = config.speed;
     this.slowSpeed = config.slowSpeed;
@@ -37,7 +38,7 @@ export default class Background extends Container {
       sky.tilePosition.x -= this.speed;
     };
     this.ticker.add(sceneTicker);
-    this.start();
+    // this.start();
   }
   // 开始
   start() {

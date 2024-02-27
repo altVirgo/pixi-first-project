@@ -6,7 +6,6 @@ export default class GridItem extends Container {
     super();
     this.config = config;
     this.width = this.height = parseInt(window.innerHeight / config.gridCount);
-    
   }
   static width=this.width
   static height = this.height

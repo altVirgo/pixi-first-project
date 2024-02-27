@@ -20,46 +20,66 @@ export default class Parkour {
     this.config = deepMerge(defaultConfig, config);
     this.status = "readying"; // 'readying' | 'playing' | 'end'
     this.speed = this.config?.defaultSpeed || 5;
-    this.#init(dom);
+    this.instance = this.#init(dom, this.config);
   }
-  #init(dom) {
-    this.instance = this.#initApp(dom, this.config);
-    this.#loadResource().then((assets) => {
-      this.assets = assets;
-      this.grid = this.#initGrid(this.config);
-      this.sence = this.#initSence(this.instance);
-      this.#watchKey();
-      this.#watchHp();
-      if (this.config.autoPlay) {
-        this.gameStart();
-      }
-    });
+  getStage() {
+    return this.instance.stage;
+  }
+  getInstance() {
+    return this.instance;
   }
   // 创建实例
-  #initApp(dom, config) {
+  #init(dom, config) {
     this.instance = new Application({
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: dom.offsetWidth,
+      height: dom.offsetHeight,
       backgroundColor: 0xffffff,
-      resizeTo: window,
+      resizeTo: dom,
       ...config,
     });
     dom.appendChild(this.instance.view);
+    this.instance.stage.sortableChildren = true;
     return this.instance;
   }
+  initGame() {
+    this.grid.createGrid();
+    this.sence = this.initSence(this.instance);
+    this.#watchKey();
+    this.#watchHp();
+    if (this.config.autoPlay) {
+      this.gameStart();
+    }
+  }
   // 加载资源
-  #loadResource() {
-    Assets.addBundle("resource", { sky, floor, player, trap, start, restart, gold });
-    return Assets.loadBundle("resource");
+  loadResource() {
+    return new Promise((resolve) => {
+      Assets.addBundle("resource", { sky, floor, player, trap, start, restart, gold });
+      Assets.loadBundle("resource").then((assets) => {
+        this.assets = assets;
+        this.grid = this.#initGrid();
+        resolve();
+      });
+    });
   }
   #initGrid() {
-    let grid = new Grid(this.config, {}, this);
+    let { gold } = this.assets;
+    let grid = new Grid(this.config, { asset: {gold} }, this);
+    grid.zIndex = 9999;
     this.config.gridWidth = grid.gridWidth;
-    console.log(grid.grids);
+    this.instance.stage.addChild(grid);
     return grid;
   }
+  #initToolSence(instance) {
+    let { sky, floor } = this.assets;
+
+    let container = new Container();
+    instance.stage.addChild(container);
+    this.bg = new Background(this.config, { asset: { sky, floor }, autoPlay: false }, this);
+    container.addChild(this.bg);
+    return container;
+  }
   // 创建场景
-  #initSence(instance) {
+  #initGameSence(instance) {
     let { sky, floor, player, trap, gold, start } = this.assets;
 
     let container = new Container();
@@ -117,7 +137,7 @@ export default class Parkour {
   #keyup() {
     // console.log("keyup");
     this.keydown = false;
-    if (this.player.status === "slow" || this.player.status === "hurry" || this.player.status==='slide') {
+    if (this.player.status === "slow" || this.player.status === "hurry" || this.player.status === "slide") {
       Event.publish("resetSpeed");
     }
     console.log(this.status);

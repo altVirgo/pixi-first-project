@@ -34,4 +34,14 @@ export default class Gold extends Container {
     }
     this.start();
   }
+  drawFromMatrix(data){
+    data.map((span) => {
+        return span
+          .filter((col) => col)
+          .map(({ x, y }) => {
+            this.addChild(goldItem);
+            return [parseInt(x / this.step), parseInt(y / this.step)];
+          });
+      });
+  }
 }
